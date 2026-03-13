@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>唐卡符号连连看 - 藏韵唐卡互动游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'SimHei', sans-serif;
+        }
+        body {
+            background-color: #f8f5f2;
+            color: #333;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section-title {
+            font-size: 32px;
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 3px;
+            background-color: #D2B48C;
+            margin: 15px auto;
+        }
+        button {
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .game-section {
+            background-color: #f0e8df;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .game-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #D2B48C;
+        }
+        .game-title {
+            font-size: 28px;
+            color: #8B4513;
+        }
+        .game-desc {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background-color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+        .stat-item span {
+            color: #8B4513;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .game-controls {
+            display: flex;
+            gap: 15px;
+        }
+        .game-btn {
+            padding: 12px 30px;
+            background-color: #8B4513;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 50px;
+        }
+        .game-btn:hover {
+            background-color: #6d3510;
+            transform: translateY(-3px);
+        }
+        .hint-btn {
+            background-color: #457B9D;
+        }
+        .hint-btn:hover {
+            background-color: #355d7d;
+        }
+        .puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
+            perspective: 1000px;
+        }
+        .puzzle-card {
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            cursor: pointer;
+        }
+        .puzzle-card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .card-back {
+            background-color: #8B4513;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d2b48c' fill-opacity='0.2' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .card-front {
+            background-color: #fff;
+            transform: rotateY(180deg);
+            font-size: 40px;
+        }
+        .game-message {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 20px;
+            color: #8B4513;
+            display: none;
+        }
+        .symbol-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #D2B48C;
+        }
+        .symbol-info h3 {
+            font-size: 20px;
+            color: #8B4513;
+            margin-bottom: 15px;
+        }
+        .symbols-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .symbol-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100px;
+        }
+        .symbol-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        .symbol-name {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .puzzle-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+            .puzzle-card {
+                height: 100px;
+            }
+            .game-title {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+            .game-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            .card-front {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="section-title">唐卡符号连连看</h2>
+        <section class="game-section">
+            <div class="game-header">
+                <div>
+                    <h3 class="game-title">唐卡元素匹配消消乐</h3>
+                    <p class="game-desc">找出相同的唐卡符号，考验你的观察力！每对符号都蕴含独特的文化寓意~</p>
+                </div>
+                <div class="game-controls">
+                    <button class="game-btn" id="startGameBtn">开始游戏</button>
+                    <button class="game-btn hint-btn" id="hintBtn">提示</button>
+                </div>
+            </div>
+
+            <div class="game-stats">
+                <div class="stat-item">已匹配: <span id="matchesCount">0</span>/<span id="totalMatches">0</span></div>
+                <div class="stat-item">用时: <span id="timeCount">0</span>秒</div>
+                <div class="stat-item">步数: <span id="movesCount">0</span></div>
+            </div>
+
+            <div class="puzzle-container" id="puzzleContainer"></div>
+
+            <div class="game-message" id="successMessage">
+                <h3>恭喜你完成挑战！</h3>
+                <p>用时: <span id="finalTime">0</span>秒 | 步数: <span id="finalMoves">0</span></p>
+                <button class="game-btn" id="playAgainBtn">再来一局</button>
+            </div>
+
+            <div class="symbol-info">
+                <h3>唐卡符号文化解析</h3>
+                <div class="symbols-grid">
+                    <div class="symbol-item">
+                        <div class="symbol-icon">☸️</div>
+                        <div class="symbol-name">法轮（象征佛法永恒）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">🌸</div>
+                        <div class="symbol-name">莲花（象征纯洁）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">✨</div>
+                        <div class="symbol-name">星辰（象征宇宙）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">☯️</div>
+                        <div class="symbol-name">阴阳（象征平衡）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">🐘</div>
+                        <div class="symbol-name">白象（象征吉祥）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">🦚</div>
+                        <div class="symbol-name">孔雀（象征美丽）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">📜</div>
+                        <div class="symbol-name">经文（象征智慧）</div>
+                    </div>
+                    <div class="symbol-item">
+                        <div class="symbol-icon">🔯</div>
+                        <div class="symbol-name">八吉祥（象征福运）</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 唐卡符号数据集（包含各种具有文化意义的符号）
+        const tangkaSymbols = [
+            '☸️', '🌸', '✨', '☯️', '🐘', '🦚', '📜', '🔯',
+            '🕉️', '🕊️', '⚖️', '🔮', '🌙', '☀️', '🌿', '🏯'
+        ];
+
+        // 游戏状态变量
+        let gameStarted = false;
+        let timer;
+        let seconds = 0;
+        let moves = 0;
+        let matches = 0;
+        let totalPairs = 0;
+        let flippedCards = [];
+        let matchedPairs = [];
+        let canFlip = true;
+
+        // DOM 元素
+        const puzzleContainer = document.getElementById('puzzleContainer');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const matchesCountEl = document.getElementById('matchesCount');
+        const totalMatchesEl = document.getElementById('totalMatches');
+        const timeCountEl = document.getElementById('timeCount');
+        const movesCountEl = document.getElementById('movesCount');
+        const successMessage = document.getElementById('successMessage');
+        const finalTimeEl = document.getElementById('finalTime');
+        const finalMovesEl = document.getElementById('finalMoves');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            resetGameState();
+            
+            // 选择12个符号（6对）用于游戏
+            const gameSymbols = [...tangkaSymbols.slice(0, 6), ...tangkaSymbols.slice(0, 6)];
+            totalPairs = gameSymbols.length / 2;
+            totalMatchesEl.textContent = totalPairs;
+            
+            // 打乱符号顺序
+            const shuffledSymbols = shuffleArray(gameSymbols);
+            
+            // 创建卡片
+            puzzleContainer.innerHTML = '';
+            shuffledSymbols.forEach((symbol, index) => {
+                const card = createCard(symbol, index);
+                puzzleContainer.appendChild(card);
+            });
+
+            // 开始计时
+            startTimer();
+            gameStarted = true;
+        }
+
+        // 创建卡片元素
+        function createCard(symbol, index) {
+            const card = document.createElement('div');
+            card.className = 'puzzle-card';
+            card.dataset.index = index;
+            card.dataset.symbol = symbol;
+            
+            const cardFront = document.createElement('div');
+            cardFront.className = 'card-front';
+            cardFront.textContent = symbol;
+            
+            const cardBack = document.createElement('div');
+            cardBack.className = 'card-back';
+            
+            card.appendChild(cardFront);
+            card.appendChild(cardBack);
+            
+            card.addEventListener('click', () => handleCardClick(card));
+            
+            return card;
+        }
+
+        // 处理卡片点击
+        function handleCardClick(card) {
+            // 检查是否可以翻转卡片
+            if (!canFlip || 
+                card.classList.contains('flipped') || 
+                flippedCards.length >= 2 ||
+                matchedPairs.includes(card.dataset.index)) {
+                return;
+            }
+            
+            // 翻转卡片
+            card.classList.add('flipped');
+            flippedCards.push(card);
+            
+            // 当翻转两张卡片时检查是否匹配
+            if (flippedCards.length === 2) {
+                moves++;
+                movesCountEl.textContent = moves;
+                checkForMatch();
+            }
+        }
+
+        // 检查匹配
+        function checkForMatch() {
+            canFlip = false;
+            const [card1, card2] = flippedCards;
+            
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                // 匹配成功
+                matchedPairs.push(card1.dataset.index, card2.dataset.index);
+                matches++;
+                matchesCountEl.textContent = matches;
+                
+                // 添加匹配动画效果
+                card1.style.border = '2px solid #4CAF50';
+                card2.style.border = '2px solid #4CAF50';
+                
+                flippedCards = [];
+                canFlip = true;
+                
+                // 检查游戏是否结束
+                if (matches === totalPairs) {
+                    endGame();
+                }
+            } else {
+                // 匹配失败，翻回
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+        }
+
+        // 提示功能
+        function showHint() {
+            if (!gameStarted || matches === totalPairs) return;
+            
+            // 找到一对未匹配的卡片
+            const allCards = document.querySelectorAll('.puzzle-card');
+            const unmatchedCards = Array.from(allCards).filter(card => 
+                !matchedPairs.includes(card.dataset.index) && 
+                !card.classList.contains('flipped')
+            );
+            
+            // 寻找匹配对
+            for (let i = 0; i < unmatchedCards.length; i++) {
+                for (let j = i + 1; j < unmatchedCards.length; j++) {
+                    if (unmatchedCards[i].dataset.symbol === unmatchedCards[j].dataset.symbol) {
+                        // 高亮提示
+                        unmatchedCards[i].style.boxShadow = '0 0 15px #FFB703';
+                        unmatchedCards[j].style.boxShadow = '0 0 15px #FFB703';
+                        
+                        // 3秒后移除高亮
+                        setTimeout(() => {
+                            unmatchedCards[i].style.boxShadow = '';
+                            unmatchedCards[j].style.boxShadow = '';
+                        }, 2000);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 开始计时器
+        function startTimer() {
+            clearInterval(timer);
+            seconds = 0;
+            timer = setInterval(() => {
+                seconds++;
+                timeCountEl.textContent = seconds;
+            }, 1000);
+        }
+
+        // 结束游戏
+        function endGame() {
+            clearInterval(timer);
+            gameStarted = false;
+            
+            // 显示成功消息
+            finalTimeEl.textContent = seconds;
+            finalMovesEl.textContent = moves;
+            successMessage.style.display = 'block';
+        }
+
+        // 重置游戏状态
+        function resetGameState() {
+            clearInterval(timer);
+            seconds = 0;
+            moves = 0;
+            matches = 0;
+            flippedCards = [];
+            matchedPairs = [];
+            canFlip = true;
+            gameStarted = false;
+            
+            // 重置UI
+            timeCountEl.textContent = '0';
+            movesCountEl.textContent = '0';
+            matchesCountEl.textContent = '0';
+            successMessage.style.display = 'none';
+        }
+
+        // 数组打乱函数
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // 事件监听
+        startGameBtn.addEventListener('click', initGame);
+        hintBtn.addEventListener('click', showHint);
+        playAgainBtn.addEventListener('click', initGame);
+
+        // 初始化页面时显示游戏说明
+        window.addEventListener('load', () => {
+            // 预加载效果
+            const loadingCards = document.querySelectorAll('.puzzle-card');
+            if (loadingCards.length === 0) {
+                // 显示初始提示卡片
+                for (let i = 0; i < 6; i++) {
+                    const card = createCard('?', i);
+                    puzzleContainer.appendChild(card);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

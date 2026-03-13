@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>唐卡DIY小游戏</title>
+    <!-- 仅保留必要的在线资源 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        /* 仅保留游戏核心样式 */
+        body {
+            padding: 20px;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        .game-section {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #8B4513;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .game-title {
+            font-size: 22px;
+            color: #457B9D;
+        }
+        .game-desc {
+            color: #666;
+            margin-top: 5px;
+        }
+        .game-start-btn {
+            padding: 10px 20px;
+            background-color: #457b9d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .coloring-game {
+            display: none; 
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .game-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .color-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        .color-btn.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 2px #333;
+        }
+        .reset-btn, .save-btn, .lineart-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .reset-btn {
+            background-color: #e63946;
+            color: #fff;
+        }
+        .save-btn {
+            background-color: #457b9d;
+            color: #fff;
+        }
+        .lineart-btn {
+            background-color: #6b705c;
+            color: #fff;
+        }
+        .game-canvas {
+            width: 100%;
+            height: 500px;
+            border: 5px solid #D2B48C;
+            border-radius: 10px;
+            background-color: #fff;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .game-tips {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .lineart-selector {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .lineart-thumbnail {
+            width: 80px;
+            height: 80px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .lineart-thumbnail.active {
+            border-color: #457b9d;
+        }
+        .lineart-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<h1 id="one">XYX</h1>
+    <!-- 仅保留游戏核心区域 -->
+    <section class="section game-section" id="game">
+        <div class="container">
+            <h2 class="section-title">互动游戏 · 手绘唐卡</h2>
+            <div class="game-container">
+                <div class="game-header">
+                    <div>
+                        <h3 class="game-title">唐卡涂色大师</h3>
+                        <p class="game-desc">选用天然唐卡颜料，亲手为线稿上色，创作专属非遗作品，体验唐卡制作的乐趣~</p>
+                    </div>
+                    <button class="game-start-btn" id="gameStartBtn">开始创作</button>
+                </div>
+
+                <!-- 涂色游戏核心区 -->
+                <div class="coloring-game" id="coloringGame">
+                    <!-- 线稿选择（替换为在线图片） -->
+                    <div class="lineart-selector">
+                        <div class="lineart-thumbnail active" data-lineart="buddha">
+                            <img src="https://picsum.photos/80/80?random=1" alt="佛像线稿">
+                        </div>
+                        <div class="lineart-thumbnail" data-lineart="green-tara">
+                            <img src="https://picsum.photos/80/80?random=2" alt="绿度母线稿">
+                        </div>
+                        <div class="lineart-thumbnail" data-lineart="shakyamuni">
+                            <img src="https://picsum.photos/80/80?random=3" alt="释迦牟尼线稿">
+                        </div>
+                    </div>
+                    
+                    <!-- 颜色工具条 -->
+                    <div class="game-tools">
+                        <button class="color-btn active" style="background-color: #8B4513;" data-color="#8B4513" title="棕色 - 天然赭石"></button>
+                        <button class="color-btn" style="background-color: #D2B48C;" data-color="#D2B48C" title="棕黄色 - 黄土"></button>
+                        <button class="color-btn" style="background-color: #E63946;" data-color="#E63946" title="红色 - 朱砂"></button>
+                        <button class="color-btn" style="background-color: #457B9D;" data-color="#457B9D" title="蓝色 - 青金石"></button>
+                        <button class="color-btn" style="background-color: #1D3557;" data-color="#1D3557" title="深蓝色 - 靛蓝"></button>
+                        <button class="color-btn" style="background-color: #F1FAEE;" data-color="#F1FAEE" title="白色 - 白垩"></button>
+                        <button class="color-btn" style="background-color: #FFB703;" data-color="#FFB703" title="黄色 - 金箔色"></button>
+                        <button class="color-btn" style="background-color: #FB8500;" data-color="#FB8500" title="橙色 - 雄黄"></button>
+                        <button class="color-btn" style="background-color: #2A9D8F;" data-color="#2A9D8F" title="绿色 - 绿松石"></button>
+                        <button class="color-btn" style="background-color: #9C6644;" data-color="#9C6644" title="棕红色 - 红土"></button>
+                        <button class="reset-btn" id="resetBtn">重置画布</button>
+                        <button class="save-btn" id="saveBtn">保存作品</button>
+                        <button class="lineart-btn" id="showLineartBtn">显示/隐藏线稿</button>
+                    </div>
+                    
+                    <!-- 绘画画布 -->
+                    <canvas class="game-canvas" id="gameCanvas" width="0" height="0"></canvas>
+                    <p class="game-tips">提示：选择下方颜色，点击/拖动鼠标涂色，可自由搭配唐卡传统色彩~<br>
+                    唐卡知识：传统唐卡颜料多来自天然矿物与植物，色彩鲜艳且历久弥新</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JS代码放在body最后，确保DOM加载完成 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.min.js"></script>
+    <script>
+        // 确保DOM加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 游戏核心变量
+            const gameStartBtn = document.getElementById('gameStartBtn');
+            const coloringGame = document.getElementById('coloringGame');
+            const gameCanvas = document.getElementById('gameCanvas');
+            const ctx = gameCanvas.getContext('2d');
+            const colorBtns = document.querySelectorAll('.color-btn');
+            const resetBtn = document.getElementById('resetBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const showLineartBtn = document.getElementById('showLineartBtn');
+            const lineartThumbnails = document.querySelectorAll('.lineart-thumbnail');
+            
+            // 游戏状态
+            let currentColor = '#8B4513';
+            let isDrawing = false;
+            let showLineart = true;
+            let currentLineart = 'buddha';
+            let canvasData = null;
+            
+            // 初始化画布尺寸
+            function resizeCanvas() {
+                const canvasParent = gameCanvas.parentElement;
+                const newWidth = canvasParent.clientWidth;
+                const newHeight = 500;
+                
+                if (canvasData) {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = gameCanvas.width;
+                    tempCanvas.height = gameCanvas.height;
+                    tempCanvas.getContext('2d').drawImage(gameCanvas, 0, 0);
+                    
+                    gameCanvas.width = newWidth;
+                    gameCanvas.height = newHeight;
+                    
+                    ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 
+                                0, 0, newWidth, newHeight);
+                    if (showLineart) {
+                        drawTangkaLine();
+                    }
+                } else {
+                    gameCanvas.width = newWidth;
+                    gameCanvas.height = newHeight;
+                    drawTangkaLine();
+                }
+            }
+            
+            // 窗口大小变化时调整画布
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 开始游戏
+            gameStartBtn.addEventListener('click', function() {
+                coloringGame.style.display = 'block';
+                gameStartBtn.style.display = 'none';
+                resizeCanvas();
+                canvasData = ctx.getImageData(0, 0, gameCanvas.width, gameCanvas.height);
+            });
+            
+            // 选择颜色
+            colorBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    colorBtns.forEach(function(b) {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                    currentColor = btn.getAttribute('data-color');
+                });
+            });
+            
+            // 选择线稿
+            lineartThumbnails.forEach(function(thumb) {
+                thumb.addEventListener('click', function() {
+                    lineartThumbnails.forEach(function(t) {
+                        t.classList.remove('active');
+                    });
+                    thumb.classList.add('active');
+                    currentLineart = thumb.getAttribute('data-lineart');
+                    resetCanvas();
+                });
+            });
+            
+            // 重置画布
+            resetBtn.addEventListener('click', resetCanvas);
+            
+            function resetCanvas() {
+                ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+                drawTangkaLine();
+                canvasData = ctx.getImageData(0, 0, gameCanvas.width, gameCanvas.height);
+            }
+            
+            // 显示/隐藏线稿
+            showLineartBtn.addEventListener('click', function() {
+                showLineart = !showLineart;
+                const currentData = ctx.getImageData(0, 0, gameCanvas.width, gameCanvas.height);
+                
+                ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+                ctx.putImageData(currentData, 0, 0);
+                
+                if (showLineart) {
+                    drawTangkaLine();
+                }
+            });
+            
+            // 保存作品
+            saveBtn.addEventListener('click', function() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = gameCanvas.width;
+                tempCanvas.height = gameCanvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.drawImage(gameCanvas, 0, 0);
+                
+                if (!showLineart) {
+                    tempCtx.strokeStyle = '#333';
+                    tempCtx.lineWidth = 2;
+                    drawTangkaLine(tempCtx);
+                }
+                
+                const link = document.createElement('a');
+                link.download = '我的唐卡作品.png';
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+            });
+            
+            // 绘制唐卡线稿
+            function drawTangkaLine(context) {
+                if (!context) context = ctx;
+                const centerX = gameCanvas.width / 2;
+                const centerY = gameCanvas.height / 2;
+                
+                context.strokeStyle = '#333';
+                context.lineWidth = 2;
+                
+                // 根据选择绘制不同线稿
+                if (currentLineart === 'buddha') {
+                    drawBuddhaLineart(context, centerX, centerY);
+                } else if (currentLineart === 'green-tara') {
+                    drawGreenTaraLineart(context, centerX, centerY);
+                } else if (currentLineart === 'shakyamuni') {
+                    drawShakyamuniLineart(context, centerX, centerY);
+                }
+            }
+            
+            // 佛像线稿
+            function drawBuddhaLineart(context, centerX, centerY) {
+                // 头部
+                context.beginPath();
+                context.arc(centerX, centerY - 50, 80, 0, Math.PI * 2);
+                context.stroke();
+                
+                // 头冠
+                context.beginPath();
+                context.arc(centerX, centerY - 130, 20, 0, Math.PI * 2);
+                context.stroke();
+                
+                // 身体
+                context.beginPath();
+                context.moveTo(centerX - 100, centerY + 30);
+                context.lineTo(centerX - 150, centerY + 200);
+                context.lineTo(centerX + 150, centerY + 200);
+                context.lineTo(centerX + 100, centerY + 30);
+                context.closePath();
+                context.stroke();
+                
+                // 五官
+                context.beginPath();
+                context.arc(centerX - 30, centerY - 60, 10, 0, Math.PI);
+                context.stroke();
+                
+                context.beginPath();
+                context.arc(centerX + 30, centerY - 60, 10, 0, Math.PI);
+                context.stroke();
+                
+                context.beginPath();
+                context.moveTo(centerX, centerY - 50);
+                context.lineTo(centerX, centerY - 20);
+                context.stroke();
+            }
+            
+            // 绿度母线稿
+            function drawGreenTaraLineart(context, centerX, centerY) {
+                // 头部
+                context.beginPath();
+                context.arc(centerX, centerY - 60, 70, 0, Math.PI * 2);
+                context.stroke();
+                
+                // 身体
+                context.beginPath();
+                context.moveTo(centerX - 90, centerY + 10);
+                context.lineTo(centerX - 130, centerY + 220);
+                context.lineTo(centerX + 130, centerY + 220);
+                context.lineTo(centerX + 90, centerY + 10);
+                context.closePath();
+                context.stroke();
+                
+                // 莲花座
+                context.beginPath();
+                context.ellipse(centerX, centerY + 220, 150, 40, 0, 0, Math.PI * 2);
+                context.stroke();
+            }
+            
+            // 释迦牟尼线稿
+            function drawShakyamuniLineart(context, centerX, centerY) {
+                // 头部
+                context.beginPath();
+                context.arc(centerX, centerY - 50, 80, 0, Math.PI * 2);
+                context.stroke();
+                
+                // 身体
+                context.beginPath();
+                context.moveTo(centerX - 120, centerY + 30);
+                context.lineTo(centerX - 160, centerY + 230);
+                context.lineTo(centerX + 160, centerY + 230);
+                context.lineTo(centerX + 120, centerY + 30);
+                context.closePath();
+                context.stroke();
+                
+                // 右手触地印
+                context.beginPath();
+                context.moveTo(centerX - 120, centerY + 50);
+                context.lineTo(centerX - 180, centerY + 180);
+                context.stroke();
+            }
+            
+            // 绘画功能 - 鼠标事件
+            gameCanvas.addEventListener('mousedown', startDrawing);
+            gameCanvas.addEventListener('mousemove', draw);
+            gameCanvas.addEventListener('mouseup', stopDrawing);
+            gameCanvas.addEventListener('mouseout', stopDrawing);
+            
+            // 触摸事件（移动端）
+            gameCanvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const pos = getCanvasPosition(touch.clientX, touch.clientY);
+                startDrawing(pos);
+            });
+            
+            gameCanvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const touch = e.touches[0];
+                const pos = getCanvasPosition(touch.clientX, touch.clientY);
+                draw(pos);
+            });
+            
+            gameCanvas.addEventListener('touchend', stopDrawing);
+            
+            // 获取画布坐标
+            function getCanvasPosition(clientX, clientY) {
+                const rect = gameCanvas.getBoundingClientRect();
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+            
+            function startDrawing(e) {
+                isDrawing = true;
+                const pos = e.x !== undefined ? e : getCanvasPosition(e.clientX, e.clientY);
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = currentColor;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                
+                const pos = e.x !== undefined ? e : getCanvasPosition(e.clientX, e.clientY);
+                
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 20;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+                
+                ctx.fillStyle = currentColor;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+            
+            function stopDrawing() {
+                isDrawing = false;
+            }
+        });
+    </script>
+
+</body>
+</html>
